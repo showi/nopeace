@@ -1,4 +1,3 @@
-
 extends Node2D
 
 var level_number = 1
@@ -9,6 +8,7 @@ var screen_size
 
 func _ready():
 	screen_size = get_viewport_rect().size
+	print("[screen] %s" % screen_size)
 	set_process(true)
 	var path = "res://level/%02d/level_%02d.scn" % [level_number, level_number]
 	var level_scn = load(path)

@@ -1,10 +1,46 @@
 extends Node2D
 
-var life = 100
-var shield = 100
+var stats = {
+	'lvl': 1,
+	'life': 100,
+	'life_retry': 3,
+	'shield': {
+		'mag': 100,
+		'phy': 100,
+	},
+	'atk': {
+		'phy': 10,
+		'mag': 100,
+	},
+	'def': {
+		'phy': 100,
+		'mag': 100,
+	},
+	'stats': {
+		'count': {
+			'hit': 0,
+			'powerup': 0,
+		}
+	}
+}
+
+var lvl_factor = 0.001
 
 func _ready():
-	pass
+	print("mag atk: %s" % calc_mag_atk())
+	print("phy atk: %s" % calc_phy_atk())
 
-func _on_hit(ev):
-	print("Hit by something")
+func calc_level_factor(lvl):
+	return lvl_factor * lvl
+
+func calc_mag_def():
+	return calc_level_factor(stats.lvl) * (stats.shield.mag + stats.def.mag)
+
+func calc_phy_def():
+	return calc_level_factor(stats.lvl) * (stats.shield.phy + stats.def.phy)
+	
+func calc_mag_atk():
+	return calc_level_factor(stats.lvl) * (stats.atk.mag)
+
+func calc_phy_atk():
+	return calc_level_factor(stats.lvl) * (stats.atk.phy)

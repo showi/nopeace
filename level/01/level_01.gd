@@ -1,17 +1,9 @@
+extends "/level/base.gd"
 
-extends Node2D
+onready var dynamic = get_node("dynamic")
 
-var name = "First can be better"
+func add_dynamic(node):
+	dynamic.add_child(node)
 
-var prunes = []
-
-func _ready():
-	set_fixed_process(true)
-
-func prune(node):
-	prunes.append(node)
-	
-func _fixed_process(delta):
-	for node in prunes:
-		self.remove_child(node)
-	prunes = []
+func _on_worldbound_body_enter( body ):
+	print("into void")
