@@ -4,6 +4,7 @@ var velocity = Vector2(0, 900)
 var _lookat = Vector2(0, 1)
 onready var timer = get_node('fire_timer')
 onready var life_pb = get_node('life_pb')
+onready var weapon = get_node('weapon')
 
 func _init():
 	owner = self
@@ -23,5 +24,8 @@ func _fixed_process(delta):
 	life_pb.set_value(life)
 	
 func _on_fire_timer_timeout():
+	for ammo in weapon.fire(self, get_pos(), Vector2(0, 1)):
+		ammo.team = team
+		level.add_dynamic(ammo)
 	timer.set_wait_time(rand_range(1.4, 3))
-	self.fire(self, {'pos': self.get_pos(), 'color': Color('#ff00ff')})
+	#self.fire(self, {'pos': self.get_pos(), 'color': Color('#ff00ff')})
