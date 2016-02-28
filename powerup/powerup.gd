@@ -9,11 +9,11 @@ func _ready():
 func _fixed_process(delta):
 	if freed:
 		timer.stop()
-		self.free()
+		return self.free()
 
 func restart():
 	owner = self
-	timer.set_wait_time(rand_range(0.25, 1.45))
+	timer.set_wait_time(rand_range(1, 3))
 	timer.start()
 
 func kill():

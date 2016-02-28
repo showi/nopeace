@@ -4,6 +4,9 @@ onready var timer = get_node('Timer')
 onready var sprite = get_node('AnimatedSprite')
 
 var freed = false
+var factor = 1.2
+var scale_vec = Vector2(factor, factor)
+onready var animated = get_node('AnimatedSprite')
 
 func _ready():
 	set_fixed_process(true)
@@ -12,6 +15,9 @@ func _ready():
 func _fixed_process(delta):
 	if freed:
 		self.free()
+		return
+	animated.scale(get_scale() + (scale_vec*delta))
+	
 
 func restart():
 	sprite.restart()

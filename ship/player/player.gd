@@ -8,6 +8,9 @@ onready var s_weapon = get_node("/root/game/viewport/level/status/panel_weapon/w
 onready var model = get_node('model')
 onready var weapon = get_node('weapon')
 
+
+var mouse_speed_factor = 30
+
 var player_choice = ['player01', 'player02', 'player03']
 var player_index = 0
 var _cache = {}
@@ -21,14 +24,14 @@ func _ready():
 	set_process_input(true)
 	load_model('player02')
 
+var forces = Vector2()
+
 func _input(event):
 	if event.type == InputEvent.KEY:
 		if not event.pressed:
 			return
 		for name in ['laser', 'double_bullet', 'plasma']:
-			print('name: %s' % name)
 			if InputMap.event_is_action(event, 'weapon_%s' % name):
-				print("switching")
 				weapon.switch_model(name)
 				print("switched: %s" % name)
 
@@ -36,10 +39,14 @@ func _input(event):
 		if event.pressed == 0:
 			fire(weapon)
 	elif (event.type == InputEvent.MOUSE_MOTION):
-		self.set_pos(event.pos)
+		var diff = event.pos - get_pos()
+		if diff.length() < 0.1:
+			return
+		forces += diff
 
 func switch_model(name):
 	if model:
+		remove_child(model)
 		model.free()
 		model = null
 	model = load_model(name).instance()
@@ -52,19 +59,21 @@ func load_model(name):
 	return _cache[name]
 
 func _fixed_process(delta):
-	current_pos = get_pos()
+	._fixed_process(delta)
 	if s_life:
 		s_money.set_text("%05s$" % money)
 		s_life.set_percent_visible(life)
-	if backup._restore:
-		restore_rigid()
-		backup._restore = false
-		show()
+	if forces != null:
+		var df = forces * (delta * mouse_speed_factor)
+		set_pos(get_pos() + df)
+		forces -= df
+		if forces.length() < 1:
+			forces = Vector2()
 
-func _on_Timer_timeout():
+func _on_Timer_timeoutddddd():
 	if player_index > player_choice.size() - 1:
 		player_index = 0
-	switch_model(player_choice[player_index])
+	#switch_model(player_choice[player_index])
 	player_index += 1
 
 func _on_weapon_weapon_switch( whoe, name ):

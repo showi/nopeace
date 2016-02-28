@@ -9,9 +9,9 @@ export var weapon_choice = ['laser', 'double_bullet', 'plasma']
 export var auto_fire = false
 
 onready var auto_fire_timer = get_node('auto_fire_timer')
-var vec_up = Vector2(0, -1)
+onready var game = get_node('/root/game')
 
-var _cache = {}
+const up_vec = Vector2(0, -1)
 
 func _ready():
 	if weapon_selected:
@@ -36,20 +36,18 @@ func switch_model(name):
 	return model
 
 func load_model(name):
-	print("name: %s" % name)
-	if not(name in _cache):
-		name = "res://weapon/model/weapon_%s.scn" % name
-		_cache[name] = load(name)
-	return _cache[name]
+	return load("res://weapon/model/weapon_%s.scn" % name)
 
 func fire(initiator, pos, lookat):
 	return model.fire(initiator, pos, lookat)	
 
-
 func _on_auto_fire_timer_timeout():
-	for child in fire(self, Vector2(0,0), vec_up):
+	var pos = get_pos()
+	var dynamic = game.get_dynamic()
+	for child in fire(self, pos, up_vec):
 		child.set_layer_mask(2)
-		child.set_linear_velocity(Vector2(0,0))
-		model.add_child(child)
+		child.set_linear_velocity(pos)
+		dynamic.add_child(child)
+		child.fire(up_vec.rotated(get_rot()).normalized())
 		child.show()
-	
+	auto_fire_timer.start()

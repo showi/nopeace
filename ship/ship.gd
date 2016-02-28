@@ -7,16 +7,16 @@ export var damage = 10
 export var is_respawning = true
 
 const explosion_scn = preload("res://explosion/explosion.scn")
-const bullet_scn = preload("res://weapon/bullet.scn")
 const cstat_scn = preload("res://cstat/cstat.scn")
 const powerup_scn = preload("res://powerup/powerup.scn")
-const pool_scn = preload("res://pool/pool.scn")
 
-onready var level = get_node("/root/game/viewport/level")
+onready var game = get_node("/root/game")
 
 var explosion = null
 var bullet = null 
 var cstat = null
+
+const up_vec = Vector2(0, -1)
 
 var backup = {
 	"_restore": false,
@@ -29,7 +29,7 @@ var backup = {
 func _ready():
 	save_rigid()
 	set_fixed_process(true)
-	
+
 func _init():
 	team = 0
 	kind = 0
@@ -62,7 +62,7 @@ func drop():
 		return
 	var powerup = powerup_scn.instance()
 	powerup.set_pos(self.get_pos())
-	level.add_dynamic(powerup)
+	game.get_dynamic().add_child(powerup)
 
 func kill():
 	hide()
@@ -70,7 +70,7 @@ func kill():
 	if is_respawning:
 		respawn()
 	else:
-		call_deferred('free', self)
+		free()
 
 func _fixed_process(delta):
 	if backup._restore:
@@ -80,16 +80,16 @@ func _fixed_process(delta):
 
 func fire(weapon):
 	var pos = get_pos()
-	for ammo in weapon.fire(self, pos, Vector2(0, -1)):
-		ammo.team = team
-		ammo.owner = self
-		level.add_dynamic(ammo)
+	var dynamic = game.get_dynamic()
+	for ammo in weapon.fire(self, pos, up_vec):
+		dynamic.add_child(ammo)
+		ammo.fire(up_vec.rotated(get_rot()).normalized())
 		ammo.show()
 
 func explode():
 	var boom = explosion.random()
 	boom.set_pos(get_pos())
-	level.add_dynamic(boom)
+	game.get_dynamic().add_child(boom)
 
 func _on_respawn_timer_timeout():
 	respawn()

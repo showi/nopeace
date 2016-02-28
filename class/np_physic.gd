@@ -9,8 +9,8 @@ func _on_enemy_body_enter(body):
 	elif body.kind == kind == 0:
 		return
 	elif body.team != team:
-		if body.owner:
-			body.owner.hit_with(self, body)
+		if body.get_owner():
+			body.get_owner().hit_with(self, body)
 		hit_by(body)
 	elif body.kind == 0:
 		body.kill()
