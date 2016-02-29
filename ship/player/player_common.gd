@@ -8,7 +8,6 @@ func _init():
 	cstat = cstat_scn.instance()
 
 func _ready():
-	owner = get_parent()
 	set_fixed_process(true)
 
 func _fixed_process(delta):

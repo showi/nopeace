@@ -14,7 +14,7 @@ func get_dynamic(default='mock_dynamic'):
 		return dynamic
 	dynamic = get_node('/root/game/viewport/level/dynamic')
 	if not dynamic:
-		dynamic = get_node(default)
+		dynamic = get_node('/root/game/%s' % default)
 	return dynamic
 
 func get_screen_size():

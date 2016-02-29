@@ -1,15 +1,9 @@
-extends "res://class/np_object.gd"
+extends "res://class/np_physic.gd"
 
 signal fired(ammo)
 
 export var duration = 5
-export var damage = 75
-export var speed = 300
 export var auto_fire = false
-
-#export var kind = 0
-#export var team = 3
-#var freed = false
 
 onready var kill_timer = get_node('kill_timer')
 
@@ -20,7 +14,7 @@ func _ready():
 	reconnect()
 	freed = false
 	if auto_fire:
-		fire(Vector2(0, -1))
+		fire()
 
 func start():
 	set_fixed_process(true)
@@ -28,7 +22,8 @@ func start():
 	kill_timer.start()
 
 func reconnect():
-	kill_timer.connect('timeout', self, '_on_kill_timer_timeout')
+	if not kill_timer.is_connected('timeout', self, '_on_kill_timer_timeout'):
+		kill_timer.connect('timeout', self, '_on_kill_timer_timeout')
 
 func _fixed_process(delta):
 	if freed:
@@ -37,10 +32,13 @@ func _fixed_process(delta):
 	apply_impulse(get_pos(), forces * delta)
 	set_angular_velocity(0)
 
-func fire(lookat):
+func fire():
+	var owner = get_initiator()
+	var lookat = up_vec.rotated(owner.get_rot()).normalized()
 	forces = lookat * speed
 	set_linear_velocity(forces)
-	set_rot(up_vec.angle_to(lookat))
+	set_rot(get_rot() + owner.get_rot())
+	set_pos(get_global_pos() + owner.get_global_pos())
 	emit_signal('fired', self)
 	start()
 

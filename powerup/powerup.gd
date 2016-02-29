@@ -12,7 +12,6 @@ func _fixed_process(delta):
 		return self.free()
 
 func restart():
-	owner = self
 	timer.set_wait_time(rand_range(1, 3))
 	timer.start()
 

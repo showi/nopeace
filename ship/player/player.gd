@@ -8,19 +8,18 @@ onready var s_weapon = get_node("/root/game/viewport/level/status/panel_weapon/w
 onready var model = get_node('model')
 onready var weapon = get_node('weapon')
 
-
-var mouse_speed_factor = 30
+var mouse_speed_factor = 100.0
 
 var player_choice = ['player01', 'player02', 'player03']
 var player_index = 0
 var _cache = {}
 var current_pos = Vector2(0,0)
+
 func _init():
 	cstat = cstat_scn.instance()
 
 func _ready():
-	owner = self
-	set_fixed_process(true)
+	._ready()
 	set_process_input(true)
 	load_model('player02')
 
@@ -34,15 +33,14 @@ func _input(event):
 			if InputMap.event_is_action(event, 'weapon_%s' % name):
 				weapon.switch_model(name)
 				print("switched: %s" % name)
-
 	elif (event.type == InputEvent.MOUSE_BUTTON):
 		if event.pressed == 0:
 			fire(weapon)
 	elif (event.type == InputEvent.MOUSE_MOTION):
-		var diff = event.pos - get_pos()
-		if diff.length() < 0.1:
-			return
-		forces += diff
+		forces += (event.pos - get_global_pos())
+
+func _draw():
+	draw_circle(get_global_pos(), 10.0, Color('#ff0000'))
 
 func switch_model(name):
 	if model:
@@ -65,10 +63,11 @@ func _fixed_process(delta):
 		s_life.set_percent_visible(life)
 	if forces != null:
 		var df = forces * (delta * mouse_speed_factor)
-		set_pos(get_pos() + df)
+		set_pos(get_pos() + forces)
 		forces -= df
-		if forces.length() < 1:
-			forces = Vector2()
+		#if forces.length() < 0.001:
+		forces = Vector2()
+	#update()
 
 func _on_Timer_timeoutddddd():
 	if player_index > player_choice.size() - 1:
