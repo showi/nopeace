@@ -5,3 +5,6 @@ func hit_with(target, ammo):
 
 func _on_shield_body_enter( body ):
 	print("Something touch shield")
+	
+func kill():
+	pass

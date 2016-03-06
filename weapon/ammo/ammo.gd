@@ -1,49 +1,72 @@
-extends "res://class/np_physic.gd"
+extends "res://class/character.gd"
 
 signal fired(ammo)
+signal killed()
 
 export var duration = 5
 export var auto_fire = false
 
 onready var kill_timer = get_node('kill_timer')
+var field_number = preload('res://class/field_damage.scn')
 
-var up_vec = Vector2(0, -1)
 var forces = Vector2()
 
 func _ready():
+	._ready()
 	reconnect()
 	freed = false
+	set_fixed_process(true)
 	if auto_fire:
 		fire()
 
 func start():
-	set_fixed_process(true)
 	kill_timer.set_wait_time(duration)
 	kill_timer.start()
 
 func reconnect():
+	if not is_connected('body_enter', self, '_on_body_enter'):
+		connect('body_enter', self, '_on_body_enter')
 	if not kill_timer.is_connected('timeout', self, '_on_kill_timer_timeout'):
 		kill_timer.connect('timeout', self, '_on_kill_timer_timeout')
 
 func _fixed_process(delta):
 	if freed:
 		kill_timer.stop()
-		return free()
-	apply_impulse(get_pos(), forces * delta)
-	set_angular_velocity(0)
+		emit_signal('killed')
+		free()
+		return false
+	return true
 
 func fire():
-	var owner = get_initiator()
-	var lookat = up_vec.rotated(owner.get_rot()).normalized()
-	forces = lookat * speed
-	set_linear_velocity(forces)
-	set_rot(get_rot() + owner.get_rot())
-	set_pos(get_global_pos() + owner.get_global_pos())
-	emit_signal('fired', self)
+	if initiator:
+		var src = initiator.src.get_ref()
+		if not src:
+			print('Error no ref nod')
+			return
+		var force = (up_vec.rotated(initiator.rot).normalized() * speed)
+		if src.team != null:
+			team = src.team
+		set_rot(initiator.rot)
+		set_pos(initiator.pos)
+		set_applied_force(force)
+	else:
+		set_applied_force(up_vec * speed)
+	show()
 	start()
+	emit_signal('fired', self)
+
+func respawn():
+	hide()
+	restore_rigid()
+	start()
+	show()
 
 func kill():
-	freed = true
+	if is_respawning:
+		respawn()
+	else:
+		freed = true
+	return freed
 
 func hit_with():
 	pass
