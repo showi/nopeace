@@ -7,18 +7,29 @@ export var modulate_color = true
 var skin_selected = null
 
 onready var skin = get_node('skin')
+onready var weapon = get_node('weapon')
 
 func _ready():
+	reconnect()
 	._ready()
 	if skin_name == '':
 		skin_name = skin_random()
 	skin_select(skin_name)
 	save_rigid()
-	set_fixed_process(true)
+	set_children_property()
+
+func set_children_property():
+	weapon.team = team
+	weapon.auto_fire = true
+	weapon.auto_switch = true
 
 func respawn():
 	skin_select(skin_random())
 	.respawn()
+
+func hook_fixed_process(delta):
+	if get_linear_velocity().length() < speed:
+		apply_impulse(get_pos(), up_vec.rotated(get_rot()) * acceleration * delta)
 
 func skin_select(name):
 	if skin_selected:
@@ -31,7 +42,7 @@ func skin_select(name):
 	skin_selected.show()
 
 func skin_random():
-	return get_node('skin').get_child(rand_range(0, get_node('skin').get_child_count())).get_name()
+	return skin.get_child(rand_range(0, skin.get_child_count())).get_name()
 
 func _on_skin_auto_change_timeout():
 	skin_select(skin_random())

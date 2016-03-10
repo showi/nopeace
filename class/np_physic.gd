@@ -7,69 +7,99 @@ const down_vec = Vector2(0, 1)
 
 export var is_respawning = true
 export var speed = 200
-export var speed_max = 300
+export var acceleration = 600
+export var rotation_speed = 30
 
 var stat = null
-
-var initiator = null
-var _backup = null
 var root = null
+var energy = 0
+var _backup = null
+var _respawn = false
+var _freed = false
 
-class Initiator:
-	var src = null
-	var pos = null
-	var rot = null
-	var initial_force = null
-	func _init(p_src, p_pos, p_rot):
-		self.src = weakref(p_src)
-		self.pos = p_pos
-		self.rot = p_rot
+func _ready():
+	stat = stat_init()
+	root = get_viewport()
+
+func set_respawn(value):
+	_respawn = bool(value)
+
+func get_respawn():
+	return _respawn
+
+func set_freed(value):
+	_freed = bool(value)
+
+func get_freed():
+	return _freed
 
 func stat_init():
 	if not has_node('stat'):
 		var node = nstat.instance()
 		node.set_name('stat')
 		add_child(node)
-	return get_node('stat')
+	var node = get_node('stat')
+	return node
 
-func _ready():
-	stat = stat_init()
-	root = get_viewport()
+func kill():
+	_freed = true
+func _fixed_process(delta):
+	if _freed:
+		free()
+		return false
+	elif _respawn:
+		restore_rigid()
+		set_respawn(false)
+		show()
+		return true
+	return hook_fixed_process(delta)
 
-func set_initiator(p_initiator, pos, rot):
-	initiator = Initiator.new(p_initiator, pos, rot)
-	
-func get_initiator():
-	return initiator
+func hook_fixed_process(delta):
+	pass
+
+func apply_speed():
+	if speed != 0:
+		set_applied_force(up_vec.rotated(get_rot()) * speed)
+
+func reconnect():
+	connect('body_enter_shape', self, '_on_body_enter_shape')
+
+func _on_body_enter_shape( body_id, body, body_shape, local_shape ):
+	_on_body_enter(body)
 
 func _on_body_enter(body):
-	# print('%s(%s)/%s(%s) -> %s/%s' % [kind2human(kind), kind, team2human(team), team, kind2human(body.kind), team2human(body.team)])
+	var freed = false
+	print('%s(%s)/%s(%s) -> %s/%s' % [kindH(kind), kind, teamH(team), team, kindH(body.kind), teamH(body.team)])
 	if body.kind == 3 and team != null:
 		return kill()
 	elif not body.team  or not body.kind: # null and 'n/a'
-		#print('Error: No team or kind')
+		print('Error: No team or kind %s %s' % [body, body.get_name()])
 		return false
 	elif team == null or kind == null:
-		#print('Error: No team or kind (src)')
+		print('Error: No team or kind (src) %s %s'  % [body, body.get_name()])
 		return false
 	elif body.team == team:
 		return false	
 	elif body.kind == kind == 1:
 		return false
-	elif body.kind == 1:
+	if body.kind == 1:
 		hit_by_ammo(body)
-	return hit_by(body)
+		freed = true
+	if body.kind == 4:
+		hit_by_powerup(body)
+		freed = true
+	if stat.hit(body) <= 0:
+		kill()
+	if freed:
+		body.kill()
+	
+func hit_by_powerup(powerup):
+	print('getting powerup')
 
 func hit_by_ammo(ammo):
 	var muzzle = preload('res://muzzle/muzzle.scn').instance()
 	muzzle.set_global_pos(ammo.get_global_pos())
 	root.add_child(muzzle)
-
-func hit_by(body):
-	if stat.get_value('damage') != 0:
-		stat.set_value('life', stat.get_value('life') - stat.get_value('damage'))
-		if stat.get_value('life') == 0:
-			kill()
 
 func save_rigid():
 	_backup = {

@@ -1,1 +1,1 @@
-extends 'res://class/character.gd'
+extends 'res://ship/ship.gd'

@@ -19,8 +19,6 @@ func load_level(level_number):
 	var path = "res://level/%02d/level_%02d.scn" % [level_number, level_number]
 	var level_scn = load(path)
 	var level = level_scn.instance()
-	#global.set_dynamic(level.find_node('dynamicBodies'))
 	viewport.add_child(level)
-	level.get_parallax().add_child(global.get_dynamic())
-	
+
 	print("[level] %s <%s>" % [level.name, path])

@@ -12,7 +12,7 @@ export var inc_over_time = 0
 export var value_min = 0
 export var value_max = 100
 export var afflictions_on_start = []
-
+export var fixed_update = false
 var afflictions = {}
 
 onready var node_progress = get_node('Control/HBoxContainer/progress')
@@ -23,7 +23,8 @@ func _ready():
 	connect('sig_value_changed', node_progress, '_on_value_changed')
 	set_label()
 	set_progress()
-	set_fixed_process(true)
+	if fixed_update:
+		set_fixed_process(true)
 	emit_signal('sig_value_changed', field_name, value)
 
 func affliction_parse(text):
@@ -31,25 +32,33 @@ func affliction_parse(text):
 		var part = token.split(':')
 		affliction_add(part[0], float(part[1]))
 
+func affliction_exists(name):
+	if name in afflictions and afflictions[name] != null:
+		return true
+	return false
+
 func affliction_remove(name):
+	if not affliction_exists(name):
+		return
 	var p_value = afflictions[name]
 	if p_value > 0:
 		inc_over_time -= p_value
 	else:
 		dec_over_time -= p_value
-	afflictions[name] = null
+	afflictions.erase(name)
+	# = null
 
 func affliction_add(name, p_value):
-	if name in afflictions:
+	if affliction_exists(name):
 		affliction_remove(name)
 	afflictions[name] = p_value
-	if value > 0:
+	if p_value > 0:
 		inc_over_time += p_value
 	else:
 		dec_over_time += p_value
 
 func _fixed_process(delta):
-	var diff = (inc_over_time + dec_over_time)
+	var diff = (inc_over_time - dec_over_time)
 	if diff != 0:
 		set_value(value + diff * delta)
 

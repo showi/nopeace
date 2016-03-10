@@ -19,9 +19,6 @@ func _ready():
 	if not target:
 		track(self)
 
-func _fixed_process(delta):
-	update()
-
 func set_custom_drawing(value):
 	_custom_drawing = bool(value)
 	if _custom_drawing:
@@ -32,9 +29,6 @@ func set_custom_drawing(value):
 func get_custom_drawing():
 	return _custom_drawing
 
-func _draw():
-	draw_circle(get_mouse_pos(), draw_radius, draw_color)
-
 func track(p_target):
 	target = p_target
 	parent = target.get_parent()
@@ -44,4 +38,4 @@ func track(p_target):
 func get_mouse_pos():
 	#if _which:
 	#	return _which.get_mouse_pos()
-	return target.get_global_transform().inverse() * target.get_viewport_transform().inverse() * (target.get_viewport().get_mouse_pos())
+	return target.get_viewport().get_mouse_pos()

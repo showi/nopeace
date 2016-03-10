@@ -9,22 +9,23 @@ var player_choice = ['player01', 'player02', 'player03']
 var player_index = 0
 var _cache = {}
 var current_pos = Vector2(0,0)
+var forces = Vector2()
+
 
 func _ready():
-	switch_model('player02')
+	reconnect()
 	._ready()
-	#set_as_toplevel(true)
+	energy = stat.get_node('energy')
+	switch_model('player02')
+	save_rigid()
 	set_fixed_process(true)
 	set_process_input(true)
-
-var forces = Vector2()
+	print('player %s %s' % [kind, team])
 
 func _input(event):
 	if event.type == InputEvent.KEY:
-		if not event.pressed:
-			return
 		if InputMap.event_is_action(event, 'fire_first'):
-			fire(weapon)
+			fire_helper(event)
 		elif InputMap.event_is_action(event, 'ui_right'):
 			set_rot(get_rot() - 0.3)
 		elif InputMap.event_is_action(event, 'ui_left'):
@@ -34,16 +35,19 @@ func _input(event):
 				weapon.weapon_select(name)
 				break
 	elif (event.type == InputEvent.MOUSE_BUTTON):
-		if event.pressed == 0:
-			fire(weapon)
+		fire_helper(event)
 	elif (event.type == InputEvent.MOUSE_MOTION):
-		#set_pos(event.pos)
-		var diff = (event.pos - get_pos())
-		#if diff.length() > 512:
-		#	set_pos(event.pos)
-		#	forces = Vector2()
-		#else:
-		forces += diff
+		forces = (event.pos - get_pos())
+
+func fire_helper(event):
+	if event.pressed:
+		energy.affliction_add('regen', 100)
+	else:
+		weapon.energy = energy.value
+		if energy.affliction_exists('regen'):
+			energy.affliction_remove('regen')
+		energy.value = 0
+		fire(weapon)
 
 func switch_model(name):
 	if model:
@@ -54,7 +58,6 @@ func switch_model(name):
 	model.team = team
 	model.kind = kind
 	add_child(model)
-	model.connect('body_enter', self, '_on_body_enter')
 	return model
 
 func load_model(name):
@@ -62,20 +65,17 @@ func load_model(name):
 		_cache[name] = load("res://ship/player/model/%s.scn" % name)
 	return _cache[name]
 
-func _fixed_process(delta):
-	._fixed_process(delta)
+func hook_fixed_process(delta):
+	.hook_fixed_process(delta)
 	if forces != null:
 		var df = forces * (delta * mouse_speed_factor)
-		if df.length() < 0.001:
-			forces = Vector2()
-		else:
-			set_pos(get_pos() + df)
-			forces -= df
-		if forces.length() < 0.0001:
-			forces = Vector2()
+		set_pos(get_pos() + df)
+		forces = null
 
-func _on_weapon_weapon_switch( whoe, name ):
+func _on_weapon_weapon_switch( who, name ):
 	if weapon:
-		print('trigger')
 		weapon.weapon_select(name)
+
+func _on_life_sig_value_changed( name, value ):
+	stat.set_value('life', value)
 

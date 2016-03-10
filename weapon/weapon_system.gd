@@ -9,46 +9,62 @@ export var weapon_choice = ['laser', 'double_bullet', 'plasma', 'ball']
 export var auto_fire = false
 export var auto_switch = false
 export var auto_switch_wait_time = 2.0
-export var sequence = [1.0]
+export var sequence = [0.5]
+
 var sequence_idx = 0
+var energy = 0
 
 onready var fire_timer = get_node('fire_timer')
 onready var switch_timer = get_node('switch_timer')
 
-const up_vec = Vector2(0, -1)
-
 func _ready():
+	reconnect()
 	if not weapon_selected:
 		weapon_selected = weapon_random()
 	weapon_select(weapon_selected)
-	if auto_switch:
-		auto_switch_start()
-	print(to_s())
 
-func to_s():
-	return '[WeaponSystem/%s]\n\tselected:%s\n\tauto_fire: %s\n\tauto_switch: %s' % [get_instance_ID(), weapon_selected, auto_fire, auto_switch]
+func reconnect():
+	if not fire_timer.is_connected('timeout', self, '_on_fire_timer_timeout'):
+		fire_timer.connect('timeout', self, '_on_fire_timer_timeout')
+	if not switch_timer.is_connected('timeout', self, '_on_switch_timer_timeout'):
+		switch_timer.connect('timeout', self, '_on_switch_timer_timeout')		
 
 func auto_switch_start():
 	switch_timer.set_wait_time(auto_switch_wait_time)
 	switch_timer.start()
 
+func auto_fire_sequence_next():
+	sequence_idx += 1
+	if sequence_idx >= sequence.size():
+		sequence_idx = 0
+	return sequence[sequence_idx]
+
+func auto_fire_start():
+	var next = auto_fire_sequence_next()
+	fire_timer.set_wait_time(next)	
+	fire_timer.start()
+
+func auto_fire_stop():
+	fire_timer.stop()
+
 func weapon_select(name):
 	fire_timer.stop()
 	switch_timer.stop()
 	if weapon_selected == name and model:
-		return model
-	if model:
-		model.free()
-	weapon_selected = name
-	model = load_model(name).instance()
-	model.auto_fire = false
-	model.team = team
-	model.hide()
-	self.add_child(model)
+		pass#return model
+	else:
+		if model:
+			model.free()
+		weapon_selected = name
+		model = load_model(name).instance()
+		model.team = team
+		add_child(model)
+		emit_signal('weapon_switch', self, name)
 	if auto_fire:
-		fire_timer.set_wait_time(model.duration)
+		fire_timer.set_wait_time(0.1)
 		fire_timer.start()
-	emit_signal('weapon_switch', self, name)
+	if auto_switch:
+		switch_timer.start()
 	return model
 
 func load_model(name):
@@ -57,19 +73,16 @@ func load_model(name):
 func weapon_random():
 	return weapon_choice[rand_range(0, weapon_choice.size())]
 
-func fire(initiator):
-	return model.fire(initiator)	
+func fire():
+	return model.fire(energy)
 
-func hit_by_ammo(ammo):
-	pass
-
-func _on_auto_fire_timer_timeout():
-	fire_timer.stop()
-	fire(self)
-	if sequence_idx > sequence.size():
-		sequence_idx = 0
-	fire_timer.set_wait_time(sequence[sequence_idx])	
-	fire_timer.start()
-
+func _on_fire_timer_timeout():
+	auto_fire_stop()
+	fire()
+	auto_fire_start()
+	
 func _on_switch_timer_timeout():
 	weapon_select(weapon_random())
+
+func to_s():
+	return '[WeaponSystem/%s]\n\tselected:%s\n\tauto_fire: %s\n\tauto_switch: %s' % [get_instance_ID(), weapon_selected, auto_fire, auto_switch]
