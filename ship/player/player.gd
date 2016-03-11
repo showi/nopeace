@@ -13,14 +13,15 @@ var forces = Vector2()
 
 
 func _ready():
-	reconnect()
 	._ready()
+	.reconnect()
 	energy = stat.get_node('energy')
 	switch_model('player02')
 	save_rigid()
-	set_fixed_process(true)
 	set_process_input(true)
+	set_fixed_process(true)
 	print('player %s %s' % [kind, team])
+	set_as_toplevel(true)
 
 func _input(event):
 	if event.type == InputEvent.KEY:
@@ -47,7 +48,7 @@ func fire_helper(event):
 		if energy.affliction_exists('regen'):
 			energy.affliction_remove('regen')
 		energy.value = 0
-		fire(weapon)
+		weapon.fire()
 
 func switch_model(name):
 	if model:
@@ -55,9 +56,9 @@ func switch_model(name):
 		model.free()
 		model = null
 	model = load_model(name).instance()
+	add_child(model)
 	model.team = team
 	model.kind = kind
-	add_child(model)
 	return model
 
 func load_model(name):
@@ -78,4 +79,3 @@ func _on_weapon_weapon_switch( who, name ):
 
 func _on_life_sig_value_changed( name, value ):
 	stat.set_value('life', value)
-

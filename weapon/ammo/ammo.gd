@@ -17,7 +17,7 @@ func _ready():
 	set_fixed_process(true)
 	if auto_fire:
 		start()
-	#set_collision_mask()
+
 func start():
 	kill_timer.set_wait_time(duration)
 	kill_timer.start()
@@ -28,8 +28,6 @@ func reconnect():
 
 func fire():
 	var force = (up_vec.rotated(get_rot()).normalized() * speed)
-	set_rot(get_rot())
-	set_pos(get_pos())
 	if energy > 0:
 		var damage = stat.get_value('damage')
 		var dmgcent = damage / 100.0

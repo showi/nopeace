@@ -20,6 +20,7 @@ var _freed = false
 func _ready():
 	stat = stat_init()
 	root = get_viewport()
+	set_process(true)
 
 func set_respawn(value):
 	_respawn = bool(value)
@@ -43,7 +44,13 @@ func stat_init():
 
 func kill():
 	_freed = true
+
 func _fixed_process(delta):
+	if _freed:
+		return
+	return hook_fixed_process(delta)
+
+func _process(delta):
 	if _freed:
 		free()
 		return false
@@ -52,7 +59,6 @@ func _fixed_process(delta):
 		set_respawn(false)
 		show()
 		return true
-	return hook_fixed_process(delta)
 
 func hook_fixed_process(delta):
 	pass
@@ -63,13 +69,13 @@ func apply_speed():
 
 func reconnect():
 	connect('body_enter_shape', self, '_on_body_enter_shape')
-
+	
 func _on_body_enter_shape( body_id, body, body_shape, local_shape ):
-	_on_body_enter(body)
+	return _on_body_enter(body)
 
 func _on_body_enter(body):
 	var freed = false
-	print('%s(%s)/%s(%s) -> %s/%s' % [kindH(kind), kind, teamH(team), team, kindH(body.kind), teamH(body.team)])
+	#print('%s(%s)/%s(%s) -> %s/%s' % [kindH(kind), kind, teamH(team), team, kindH(body.kind), teamH(body.team)])
 	if body.kind == 3 and team != null:
 		return kill()
 	elif not body.team  or not body.kind: # null and 'n/a'
@@ -98,8 +104,8 @@ func hit_by_powerup(powerup):
 
 func hit_by_ammo(ammo):
 	var muzzle = preload('res://muzzle/muzzle.scn').instance()
+	get_dynamic().add_child(muzzle)
 	muzzle.set_global_pos(ammo.get_global_pos())
-	root.add_child(muzzle)
 
 func save_rigid():
 	_backup = {

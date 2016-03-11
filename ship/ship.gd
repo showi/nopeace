@@ -14,8 +14,6 @@ var backup = {
 func _ready():
 	._ready()
 	explosion = explosion_scn.instance()
-	set_process(true)
-	set_as_toplevel(true)
 
 func drop():
 	var drop_rate = get_node('stat/drop_rate')
@@ -35,14 +33,3 @@ func kill():
 		set_respawn(true)
 	else:
 		set_freed(true)
-
-func fire(weapon):
-	weapon.fire()
-
-func explode():
-	var boom = explosion.random()
-	boom.set_pos(get_global_pos())
-	add_child(boom)
-
-func _on_respawn_timer_timeout():
-	respawn()

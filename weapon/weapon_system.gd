@@ -58,6 +58,7 @@ func weapon_select(name):
 		weapon_selected = name
 		model = load_model(name).instance()
 		model.team = team
+		model.set_pivot(get_parent())
 		add_child(model)
 		emit_signal('weapon_switch', self, name)
 	if auto_fire:

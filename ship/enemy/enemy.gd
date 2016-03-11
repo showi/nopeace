@@ -18,12 +18,12 @@ func drop():
 		return
 	var powerup = powerup_scn.instance()
 	powerup.set_pos(get_global_pos())
-	get_viewport().add_child(powerup)
+	get_dynamic().add_child(powerup)
 
 func explode():
 	var boom = explosion.random()
 	boom.set_pos(get_global_pos())
-	get_viewport().add_child(boom)
+	get_dynamic().add_child(boom)
 
 func set_respawn(value):
 	_respawn = bool(value)

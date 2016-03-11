@@ -10,18 +10,17 @@ onready var skin = get_node('skin')
 onready var weapon = get_node('weapon')
 
 func _ready():
-	reconnect()
 	._ready()
+	reconnect()
 	if skin_name == '':
 		skin_name = skin_random()
 	skin_select(skin_name)
 	save_rigid()
 	set_children_property()
+	set_fixed_process(true)
 
 func set_children_property():
 	weapon.team = team
-	weapon.auto_fire = true
-	weapon.auto_switch = true
 
 func respawn():
 	skin_select(skin_random())
@@ -30,6 +29,7 @@ func respawn():
 func hook_fixed_process(delta):
 	if get_linear_velocity().length() < speed:
 		apply_impulse(get_pos(), up_vec.rotated(get_rot()) * acceleration * delta)
+		set_angular_velocity(0)
 
 func skin_select(name):
 	if skin_selected:

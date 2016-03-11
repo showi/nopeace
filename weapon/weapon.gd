@@ -6,8 +6,6 @@ export var auto_fire = false
 onready var ammos = get_node('ammos')
 var fire_timer = null
 
-var _draw_queue = []
-
 func _ready():
 	fire_timer = fire_init()
 	set_children_properties()
@@ -31,7 +29,7 @@ func auto_fire_stop():
 
 func auto_fire_start():
 	fire_timer.stop()
-	fire_timer.set_wait_time(duration)
+	fire_timer.set_wait_time(duration + rand_range(0, 5))
 	fire_timer.start()
 
 var vec_up = Vector2(0, -1)
@@ -39,17 +37,16 @@ var vec_up = Vector2(0, -1)
 func fire(energy=0):
 	var ammo = null
 	var rot = get_parent().get_rot()
-	var t = get_global_transform()
+	var dynamic = get_dynamic()
 	for child in ammos.get_children():
-		ammo = child.duplicate(false)
+		ammo = child.duplicate(true)
 		ammo.energy = energy
-		#ammo.set_initiator(i, i.get_global_pos() + child.get_pos(), initiator.get_rot(), energy)
-		get_viewport().add_child(ammo)
-		ammo.set_as_toplevel(true)
-		ammo.set_pos(child.get_global_pos())
-		ammo.set_rot(rot)
+		ammo.team = team
+		#ammo.set_collision_mask(team)
+		ammo.set_rot(get_pivot().get_rot())
+		ammo.set_pos(get_global_transform() *  Vector2())
+		dynamic.add_child(ammo)
 		ammo.fire()
-		#ammo.set_as_toplevel(true)
 		
 func _on_auto_fire_timer_timeout():
 	fire(self)
