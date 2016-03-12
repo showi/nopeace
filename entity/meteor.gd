@@ -1,4 +1,4 @@
-extends 'res://class/np_physic.gd'
+extends 'res://ship/enemy/enemy.gd'
 
 export var entity_selected = ''
 export var random_rotation_speed = true

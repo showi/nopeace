@@ -11,7 +11,6 @@ var _cache = {}
 var current_pos = Vector2(0,0)
 var forces = Vector2()
 
-
 func _ready():
 	._ready()
 	.reconnect()
@@ -20,8 +19,7 @@ func _ready():
 	save_rigid()
 	set_process_input(true)
 	set_fixed_process(true)
-	print('player %s %s' % [kind, team])
-	set_as_toplevel(true)
+	print('player %s %s' % [kindH(kind), teamH(team)])
 
 func _input(event):
 	if event.type == InputEvent.KEY:

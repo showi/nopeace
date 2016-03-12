@@ -75,7 +75,6 @@ func _on_body_enter_shape( body_id, body, body_shape, local_shape ):
 
 func _on_body_enter(body):
 	var freed = false
-	#print('%s(%s)/%s(%s) -> %s/%s' % [kindH(kind), kind, teamH(team), team, kindH(body.kind), teamH(body.team)])
 	if body.kind == 3 and team != null:
 		return kill()
 	elif not body.team  or not body.kind: # null and 'n/a'
@@ -88,17 +87,24 @@ func _on_body_enter(body):
 		return false	
 	elif body.kind == kind == 1:
 		return false
+	#print('%s/%s -> %s/%s' % [kindH(kind), teamH(team), kindH(body.kind), teamH(body.team)])
 	if body.kind == 1:
 		hit_by_ammo(body)
 		freed = true
-	if body.kind == 4:
+	elif body.kind == 4:
 		hit_by_powerup(body)
 		freed = true
 	if stat.hit(body) <= 0:
 		kill()
 	if freed:
 		body.kill()
-	
+
+func drop():
+	print('drop base')
+
+func explode():
+	print('explode base')
+
 func hit_by_powerup(powerup):
 	print('getting powerup')
 

@@ -11,7 +11,7 @@ func preload_explosion():
 	var path = null
 	for i in range(1, num_explosion + 1):
 		path = "res://explosion/explosion%02d.scn" % i
-		# print("Loading path: %s" % path)
+		print("Loading path: %s" % path)
 		var module = load(path)
 		explosions.append(module)
 
