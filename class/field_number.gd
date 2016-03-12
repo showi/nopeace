@@ -5,12 +5,12 @@ signal sig_value_min(name, value)
 signal sig_value_max(name, value)
 
 export var field_name = 'foo'
-export var value = 0 setget set_value
-export var default = 100
-export var dec_over_time = 0
-export var inc_over_time = 0
-export var value_min = 0
-export var value_max = 100
+export var value = 0.0 setget set_value
+export var default = 100.0
+export var dec_over_time = 0.0
+export var inc_over_time = 0.0
+export var value_min = 0.0
+export var value_max = 100.0
 export var afflictions_on_start = []
 export var fixed_update = false
 var afflictions = {}
